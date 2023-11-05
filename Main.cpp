@@ -186,7 +186,11 @@ void Main()
 	bgm.setVolume(0.1);
 	bgm.setLoop(true);
 	Audio fire(U"Assets/fire.mp3");
-	Audio toClose(U"Assets/toClose.mp3");
+	Audio toClose(U"Assets/toClose.mp3");//急接近
+	Audio heart(U"Assets/heart.mp3");//心音
+	heart.setVolume(0.01);
+	heart.setLoop(true);
+
 	//背景色を設定
 	const ColorF backgroundColor = ColorF{ 0.1, 0.1, 0.1 }.removeSRGBCurve();
 	//レンダリング用のテクスチャを設定
@@ -371,6 +375,7 @@ void Main()
 			//画像を背景として描画
 			background.draw();
 			eat.draw();
+			heart.stop();
 			//ボタンが押されたらゲームプレイに遷移
 			if (SimpleGUI::Button(U"RestartGame", startButton.leftCenter(), 100))
 			{
@@ -385,6 +390,7 @@ void Main()
 			//画像を背景として描画
 			background.draw();
 			escape.draw();
+			heart.stop();
 			//ボタンが押されたらゲームプレイに遷移
 			if (SimpleGUI::Button(U"BacktoTitle", startButton.leftCenter(), 100))
 			{
@@ -407,7 +413,6 @@ void Main()
 			//ゲームクリア処理
 			if (eggFire && eggFire1 && eggFire2 && eggFire3 && eggFire4)
 			{
-				Print << U"卵を全て燃やした！ゲームクリア！";
 				currentState = GameState::GameClear;
 			}
 			bgm.play();//bgmを再生
@@ -447,13 +452,23 @@ void Main()
 				// 描画
 				Spider.draw(spiderTransform);
 				// Spiderがプレイヤーに向かって移動する速度
-				const double spiderSpeed = deltaTime * 4.0;  // 2.0はSpiderの移動速度
+				double spiderSpeed = deltaTime * 8.0;
 				// Spiderの位置を更新
 				spiderPosition += directionToPlayer * spiderSpeed;
 
 				// スパイダーのバウンディングボックスを動的に更新
 				Box dynamicSpiderBoundingBox = GetSpiderBoundingBox(Spider, spiderPosition);
 				//dynamicSpiderBoundingBox.drawFrame(Palette::Green);
+
+				//心音
+				// Spiderとプレイヤーの距離を計算
+				double distance = spiderPosition.distanceFrom(eyePosition);
+				double Volume = -(distance/12) + 4;
+				if (Volume < 0.0){
+					Volume = 0.0;
+				}
+				heart.setVolume(Volume);
+				heart.play();
 
 				//マップ表示
 				walldouble.draw();
@@ -551,11 +566,37 @@ void Main()
 				Lighter.draw(lighterPosition);
 
 				//卵を燃やしたときの処理
-				if (playerSphere.intersects(eggBox)) {if (MouseL.down()) {Print << U"eggFire!"; eggFire = true; fire.play();}}
-				if (playerSphere.intersects(eggBox1)) { if (MouseL.down()) { Print << U"eggFire1!"; eggFire1 = true; fire.play();}}
-				if (playerSphere.intersects(eggBox2)) { if (MouseL.down()) { Print << U"eggFire2!"; eggFire2 = true; fire.play();}}
-				if (playerSphere.intersects(eggBox3)) { if (MouseL.down()) { Print << U"eggFire3!"; eggFire3 = true; fire.play();}}
-				if (playerSphere.intersects(eggBox4)) { if (MouseL.down()) { Print << U"eggFire4!"; eggFire4 = true; fire.play();}}
+				if (playerSphere.intersects(eggBox)){
+					if (MouseL.down()){
+						eggFire = true;
+						fire.play();
+					}
+				}
+				if (playerSphere.intersects(eggBox1)){
+					if (MouseL.down()){
+						eggFire1 = true;
+						fire.play();
+					}
+				}
+				if (playerSphere.intersects(eggBox2)){
+					if (MouseL.down()) {
+						eggFire2 = true;
+						fire.play();
+					}
+				}
+				if (playerSphere.intersects(eggBox3)){
+					if (MouseL.down()) {
+						eggFire3 = true;
+						fire.play();
+					}
+				}
+				if (playerSphere.intersects(eggBox4)){
+					if (MouseL.down()) {
+						eggFire4 = true;
+						fire.play();
+					}
+				}
+
 				//蜘蛛に接触したとき
 				if (playerSphere.intersects(dynamicSpiderBoundingBox))
 				{
