@@ -1,0 +1,2 @@
+# Siv3DGameJamEscapeFromSpider
+Siv3DのGameJamで作成した蜘蛛から逃げるゲームのコードとAssetです。
